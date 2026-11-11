@@ -1,0 +1,33 @@
+name: Build OCI Image
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build image
+        uses: redhat-actions/buildah-build@v3
+        with:
+          image: pico-sdk-dev-image
+          tags: latest
+          containerfiles: ./Containerfile
+
+      - name: Export image
+        run: |
+          buildah push pico-sdk-dev-image:latest \
+            oci-archive:pico-sdk-dev-image.tar:pico-sdk-dev:latest
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: pico-sdk-dev-image
+          path: pico-sdk-dev-image.tar
+          retention-days: 7
